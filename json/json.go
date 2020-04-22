@@ -7,21 +7,25 @@ import (
 	"os"
 )
 
-func LoadJsonFomFile(filename string) (result interface{}, err error) {
+/*
+ * Read a json file and unpack it to an object
+ * Usage: LoadJsonFromFile(filename,&myObject)
+ */
+func LoadJsonFomFile(filename string, object interface{}) (err error) {
 	/* Leer rawdata */
 	rawJsonData, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return result, err
+		return err
 	}
 
 	/* Validaciones */
 	if !json.Valid(rawJsonData) {
-		return result, errors.New("No valid json data")
+		return errors.New("No valid json data")
 	}
 
 	/* Obtener datos */
-	err = json.Unmarshal(rawJsonData, &result)
-	return result, err
+	err = json.Unmarshal(rawJsonData, &object)
+	return err
 }
 
 func SaveJson(object interface{}, filename string, perm os.FileMode) error {
