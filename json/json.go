@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func loadJsonFomFile(filename string) (result interface{}, err error) {
+func LoadJsonFomFile(filename string) (result interface{}, err error) {
 	/* Leer rawdata */
 	rawJsonData, err := ioutil.ReadFile(filename)
 	if err != nil {
