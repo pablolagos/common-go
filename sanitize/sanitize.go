@@ -1,11 +1,20 @@
 package sanitize
 
-import "strings"
+import (
+	"strings"
+)
 
 func SanitizeFilename(filename string) (result string) {
 	if len(filename) == 0 {
 		return result
 	}
-	result = strings.ReplaceAll(filename, "..", "")
+	result = strings.ReplaceAll(filename, "..", "--")
+	var cleanFilename string
+	for _, char := range filename {
+		if char < 32 {
+			char = '-'
+		}
+		cleanFilename = cleanFilename + string(char)
+	}
 	return result
 }
