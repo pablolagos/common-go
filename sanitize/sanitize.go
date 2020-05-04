@@ -11,7 +11,7 @@ func SanitizeFilename(filename string) (result string) {
 	result = strings.ReplaceAll(filename, "..", "--")
 	var cleanFilename string
 	for _, char := range filename {
-		if char < 32 {
+		if char < 32 || char == '*' || char == '?' {
 			char = '-'
 		}
 		cleanFilename = cleanFilename + string(char)
