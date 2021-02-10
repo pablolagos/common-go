@@ -4,44 +4,64 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"syscall"
 )
 
-type CleanupFunctionType func()
+type SignalHandlerFunction func()
+
+type handlers struct {
+	signal  os.Signal
+	handler SignalHandlerFunction
+}
 
 var c chan os.Signal
-var cleanUps []CleanupFunctionType
+var signalHandlers []handlers
 
 func init() {
 	startSignalHandler()
 }
 
-/* Start signal manager */
+/* Iniciar el manejador de señales */
 func startSignalHandler() {
 	c = make(chan os.Signal)
-	signal.Notify(c, os.Interrupt)
+	signal.Notify(c, syscall.SIGHUP, os.Interrupt, os.Kill)
 	log.Println("Signal handler started")
 	go handleSignals()
 }
 
-/* Add a function to the cleanup queue process */
-func AddCleanupFunction(functionName CleanupFunctionType) {
-	cleanUps = append(cleanUps, functionName)
-	return
+// Add function to interrupt signal SIGTERM
+func AddCleanupFunction(functionName SignalHandlerFunction) {
+	AddSignalHandler(os.Interrupt, functionName)
 }
 
-/* Manage OS signals */
+// Add a handler attached to specific signal:
+// hangup -> HUP
+func AddSignalHandler(signal os.Signal, functionName SignalHandlerFunction) {
+	handler := handlers{
+		signal:  signal,
+		handler: functionName,
+	}
+	signalHandlers = append(signalHandlers, handler)
+}
+
+/* Maneja las señales en segundo plano */
 func handleSignals() {
 	select {
 	case sig := <-c:
 
-		log.Printf("Got %s signal. Aborting...\n", sig)
+		log.Printf("Got '%v' signal...\n", sig.String())
 
-		/* Run cleanups */
-		for _, task := range cleanUps {
-			task()
+		/* Ejecutar handlers */
+		for _, task := range signalHandlers {
+			if task.signal == sig {
+				task.handler()
+			}
 		}
 
-		/* Exit */
-		os.Exit(1)
+		/* Salir */
+		if sig == os.Interrupt || sig == os.Kill {
+			log.Println("Interrupt signal recieved")
+			os.Exit(1)
+		}
 	}
 }
