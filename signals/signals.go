@@ -46,8 +46,8 @@ func AddSignalHandler(signal os.Signal, functionName SignalHandlerFunction) {
 
 /* Maneja las señales en segundo plano */
 func handleSignals() {
-	select {
-	case sig := <-c:
+	for {
+		sig := <-c
 
 		log.Printf("Got '%v' signal...\n", sig.String())
 
